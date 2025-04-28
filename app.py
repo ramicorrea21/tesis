@@ -146,8 +146,8 @@ def crear_app():
             return render_template('public/dashboard/home.html', dataLogin = dataLoginSesion())             
     return app
         
+app = crear_app()
+
 if __name__ == "__main__":
-    app = crear_app()
     app.run(debug=True, port=8000)
-    
     
