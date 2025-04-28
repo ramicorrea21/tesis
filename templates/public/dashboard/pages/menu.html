@@ -9,7 +9,7 @@
     <li><a href="{{ url_for('inicio') }}">Inicio</a></li>
     <li><a href="#">Información</a></li>
     <li>
-      <a href="{{ url_for('editProfile') }}">
+      <a href="{{ url_for('actualizarMiPerfil', id=dataLogin.idLogin) }}">
         <i class="bi bi-person-circle"></i>
         {{ dataLogin.nombre }}
       </a>
