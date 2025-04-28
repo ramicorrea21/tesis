@@ -130,20 +130,47 @@ def registrar_rutas(app):
         return render_template('public/modulo_login/register.html', msjAlert=msg, typeAlert=typeAlert)
 
     # Ruta para actualizar perfil
-    @app.route('/actualizar-mi-perfil/<int:id>', methods=['GET', 'POST'])
-    def actualizarMiPerfil(id):
-        if 'conectado' not in session:
-            return redirect(url_for('loginUser'))
-        
-        if int(session['id']) != id:
+# Ruta para actualizar perfil
+@app.route('/actualizar-mi-perfil/<int:id>', methods=['GET', 'POST'])
+def actualizarMiPerfil(id):
+    if 'conectado' not in session:
+        return redirect(url_for('loginUser'))
+    
+    if int(session['id']) != id:
+        return render_template('public/dashboard/home.html', 
+                              msjAlert='No tiene permiso para editar este perfil.', 
+                              typeAlert=0,
+                              dataLogin=dataLoginSesion())
+    
+    msg = ''
+    typeAlert = 0
+    
+    # For both GET and POST requests, get the user data
+    try:
+        conexion_DB = connectionBD()
+        if conexion_DB is None:
             return render_template('public/dashboard/home.html', 
-                                  msjAlert='No tiene permiso para editar este perfil.', 
+                                  msjAlert='Error de conexión a la base de datos.', 
                                   typeAlert=0,
                                   dataLogin=dataLoginSesion())
         
-        msg = ''
-        typeAlert = 0
+        cursor = conexion_DB.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cursor.execute("SELECT * FROM login_python WHERE id = %s", (id,))
+        user_data = cursor.fetchone()
         
+        if not user_data:
+            return render_template('public/dashboard/home.html', 
+                                  msjAlert='No existe el usuario!', 
+                                  typeAlert=0,
+                                  dataLogin=dataLoginSesion())
+                                  
+        # If this is a GET request, show the profile edit form
+        if request.method == 'GET':
+            return render_template('public/dashboard/pages/Profile.html',
+                                  dataUser=dict(user_data),
+                                  dataLogin=dataLoginSesion())
+        
+        # Process form submission for POST requests
         if request.method == 'POST':
             nombre = request.form.get('nombre', '')
             apellido = request.form.get('apellido', '')
@@ -151,54 +178,53 @@ def registrar_rutas(app):
             password = request.form.get('password', '')
             repite_password = request.form.get('repite_password', '')
             
-            try:
-                conexion_DB = connectionBD()
-                if conexion_DB is None:
-                    msg = 'Error de conexión a la base de datos. Por favor contacte al administrador.'
+            if password:
+                if password != repite_password:
+                    msg = 'Las contraseñas no coinciden.'
                     typeAlert = 0
-                    return render_template('public/dashboard/home.html', msjAlert=msg, typeAlert=typeAlert, dataLogin=dataLoginSesion())
-                    
-                cursor = conexion_DB.cursor()
-                
-                if password:
-                    if password != repite_password:
-                        msg = 'Las contraseñas no coinciden.'
-                        typeAlert = 0
-                    else:
-                        nueva_password = generate_password_hash(password, method='pbkdf2:sha256')
-                        cursor.execute("""
-                            UPDATE login_python 
-                            SET nombre = %s, apellido = %s, email = %s, password = %s 
-                            WHERE id = %s
-                        """, (nombre, apellido, email, nueva_password, id))
-                        msg = 'Perfil actualizado correctamente.'
-                        typeAlert = 1
                 else:
+                    nueva_password = generate_password_hash(password, method='pbkdf2:sha256')
                     cursor.execute("""
                         UPDATE login_python 
-                        SET nombre = %s, apellido = %s, email = %s 
+                        SET nombre = %s, apellido = %s, email = %s, password = %s 
                         WHERE id = %s
-                    """, (nombre, apellido, email, id))
+                    """, (nombre, apellido, email, nueva_password, id))
                     msg = 'Perfil actualizado correctamente.'
                     typeAlert = 1
-                
-                conexion_DB.commit()
-                
-                # Actualizar datos de sesión
-                session['nombre'] = nombre
-                session['apellido'] = apellido
-                session['email'] = email
-                
-            except Exception as e:
-                msg = f'Error: {str(e)}'
-                typeAlert = 0
-            finally:
-                if 'cursor' in locals():
-                    cursor.close()
-                if 'conexion_DB' in locals() and conexion_DB is not None:
-                    conexion_DB.close()
-        
-        return render_template('public/dashboard/home.html', msjAlert=msg, typeAlert=typeAlert, dataLogin=dataLoginSesion())
+            else:
+                cursor.execute("""
+                    UPDATE login_python 
+                    SET nombre = %s, apellido = %s, email = %s 
+                    WHERE id = %s
+                """, (nombre, apellido, email, id))
+                msg = 'Perfil actualizado correctamente.'
+                typeAlert = 1
+            
+            conexion_DB.commit()
+            
+            # Actualizar datos de sesión
+            session['nombre'] = nombre
+            session['apellido'] = apellido
+            session['email'] = email
+            
+            return render_template('public/dashboard/home.html', 
+                                  msjAlert=msg, 
+                                  typeAlert=typeAlert, 
+                                  dataLogin=dataLoginSesion())
+            
+    except Exception as e:
+        msg = f'Error: {str(e)}'
+        typeAlert = 0
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conexion_DB' in locals() and conexion_DB is not None:
+            conexion_DB.close()
+    
+    return render_template('public/dashboard/home.html', 
+                          msjAlert=msg, 
+                          typeAlert=typeAlert, 
+                          dataLogin=dataLoginSesion())
 
     # Ruta para cerrar sesión
     @app.route('/logout')
