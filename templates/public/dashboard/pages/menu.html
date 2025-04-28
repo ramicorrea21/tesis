@@ -1,0 +1,98 @@
+<header class="header">
+  <a href="./" class="logo">
+    <img src="{{url_for('static', filename ='assets/imgs/custom.png') }}" alt="Logo">
+  </a>
+  <input class="menu-btn" type="checkbox" id="menu-btn" />
+  <label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
+  <ul class="menu">
+    <li><a href="#" class="customer">Customer Portal</a></li>
+    <li><a href="{{ url_for('inicio') }}">Inicio</a></li>
+    <li><a href="#">Información</a></li>
+    <li>
+      <a href="{{ url_for('editProfile') }}">
+        <i class="bi bi-person-circle"></i>
+        {{ dataLogin.nombre }}
+      </a>
+    </li>
+    <li>
+      <a href="{{ url_for('logout') }}">
+        <i class="bi bi-arrow-clockwise"></i>
+        Salir
+      </a>
+    </li>
+  </ul>
+</header>
+
+
+<body>
+  <div class="row justify-content-center">
+    <div class="col-md-12 mb-2">
+      <h1 class="text-center">Hola <strong> {{ dataLogin.nombre }},</strong> !! Bienvenido A Nuestra Página De
+        Autogestión😃 👍
+        <hr>
+      </h1>
+
+    </div>
+  </div>
+  </header>
+
+  <div class="container">
+    <section>
+      <h2>Operaciones Técnicas</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Creá tu reclamo</h3>
+          <p>Ingresá tus reclamos</p>
+        </div>
+        <div class="card">
+          <h3>Estado de servicios</h3>
+          <p>Mediciones</p>
+        </div>
+        <div class="card">
+          <h3>Otras gestiones</h3>
+          <p>Consultas, solicitudes...</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Facturación</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Estado de cuenta</h3>
+          <p>Descargá tus facturas, adherite a débito automático</p>
+        </div>
+        <div class="card">
+          <h3>Medios de pago</h3>
+          <p>Configurá tus formas de pago</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    function toggleDropdown() {
+      const dropdown = document.getElementById('dropdown');
+      dropdown.classList.toggle('hidden');
+    }
+  </script>
+  <div class="floating-menu">
+    <button class="chatbot-btn" onclick="alert('Soy el chatbot decorativo 😄')">💬</button>
+
+    <button class="fab" onclick="toggleMenu()">❓</button>
+    <div class="fab-options" id="fab-options">
+      <a href="#">Autogestionate</a>
+      <a href="#">Configura tu autogestión</a>
+      <a href="#">Soporte</a>
+      <a href="#">Tu factura</a>
+    </div>
+  </div>
+
+  <script>
+    function toggleMenu() {
+      const options = document.getElementById('fab-options');
+      options.style.display = options.style.display === 'flex' ? 'none' : 'flex';
+    }
+  </script>
+
+</body>
