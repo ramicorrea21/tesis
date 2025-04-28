@@ -4,6 +4,8 @@ from funciones import dataLoginSesion, dataPerfilUsuario
 from conexionBD import connectionBD
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
+import psycopg2
+import psycopg2.extras
 
 def registrar_rutas(app):
     
