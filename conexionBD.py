@@ -1,24 +1,24 @@
-import mysql.connector
+# conexionBD.py
+import psycopg2
+import psycopg2.extras
 import os
 
 def connectionBD():
-
-    host = os.environ.get('DB_HOST', 'localhost')
-    user = os.environ.get('DB_USER', 'AdminAvedano')
-    password = os.environ.get('DB_PASSWORD', 'juancho16')
-    database = os.environ.get('DB_NAME', 'ejemplo_youtubee')
-    port = os.environ.get('DB_PORT', '3306')
-    
+    """
+    Create a connection to PostgreSQL database
+    Returns connection object or None if connection fails
+    """
     try:
-        mydb = mysql.connector.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database,
-            port=int(port)
+        # Using direct connection parameters
+        connection = psycopg2.connect(
+            host="dpg-d07f1gili9vc73f7ufl0-a",
+            database="tesis_login",
+            user="tesis_login_user",
+            password="glgwEdMrdPKQkkq5mPDXPtaemBHfWUeV",
+            port="5432"
         )
-        return mydb
-    except mysql.connector.Error as err:
-        print(f"Database Error: {err}")
-        # Return None if connection fails, handle this in the routes
+            
+        return connection
+    except Exception as e:
+        print(f"Database Error: {str(e)}")
         return None

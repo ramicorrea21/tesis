@@ -1,8 +1,6 @@
 from flask import session
 from conexionBD import *
-
-#https://pynative.com/python-mysql-database-connection/
-#https://pynative.com/python-mysql-select-query-to-fetch-data/
+import psycopg2.extras
 
 #creando una funcion y dentro de la misma una data (un diccionario)
 #con valores del usuario ya logueado
@@ -19,23 +17,24 @@ def dataLoginSesion():
 
 def dataPerfilUsuario():
     try:
-        conexion_MySQLdb = connectionBD()
-        if conexion_MySQLdb is None:
+        conexion_DB = connectionBD()
+        if conexion_DB is None:
             return dataLoginSesion()
 
-        mycursor = conexion_MySQLdb.cursor(dictionary=True)
+        cursor = conexion_DB.cursor(cursor_factory=psycopg2.extras.DictCursor)
         idUser = session['id']
         
-        querySQL = ("SELECT * FROM login_python WHERE id='%s'" % (idUser,))
-        mycursor.execute(querySQL)
-        datosUsuario = mycursor.fetchone()
+        # Note: In PostgreSQL, you should use %s for all parameter types
+        querySQL = ("SELECT * FROM login_python WHERE id = %s")
+        cursor.execute(querySQL, (idUser,))
+        datosUsuario = cursor.fetchone()
         
-        return datosUsuario
+        return dict(datosUsuario) if datosUsuario else dataLoginSesion()
     except Exception as e:
         print(f"Error en dataPerfilUsuario: {str(e)}")
         return dataLoginSesion()
     finally:
-        if 'mycursor' in locals():
-            mycursor.close()
-        if 'conexion_MySQLdb' in locals() and conexion_MySQLdb is not None:
-            conexion_MySQLdb.close()
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conexion_DB' in locals() and conexion_DB is not None:
+            conexion_DB.close()

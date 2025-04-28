@@ -28,13 +28,13 @@ def registrar_rutas(app):
             password = request.form['password']
             
             try:
-                conexion_MySQLdb = connectionBD()
-                if conexion_MySQLdb is None:
+                conexion_DB = connectionBD()
+                if conexion_DB is None:
                     msg = 'Error de conexión a la base de datos. Por favor contacte al administrador.'
                     typeAlert = 0
                     return render_template('public/modulo_login/index.html', msjAlert=msg, typeAlert=typeAlert)
                     
-                cursor = conexion_MySQLdb.cursor(dictionary=True)
+                cursor = conexion_DB.cursor(cursor_factory=psycopg2.extras.DictCursor)
                 cursor.execute("SELECT * FROM login_python WHERE email = %s", (email,))
                 account = cursor.fetchone()
                 
@@ -58,8 +58,8 @@ def registrar_rutas(app):
             finally:
                 if 'cursor' in locals():
                     cursor.close()
-                if 'conexion_MySQLdb' in locals() and conexion_MySQLdb is not None:
-                    conexion_MySQLdb.close()
+                if 'conexion_DB' in locals() and conexion_DB is not None:
+                    conexion_DB.close()
         
         return render_template('public/modulo_login/index.html', msjAlert=msg, typeAlert=typeAlert)
 
@@ -95,13 +95,13 @@ def registrar_rutas(app):
                 typeAlert = 0
             else:
                 try:
-                    conexion_MySQLdb = connectionBD()
-                    if conexion_MySQLdb is None:
+                    conexion_DB = connectionBD()
+                    if conexion_DB is None:
                         msg = 'Error de conexión a la base de datos. Por favor contacte al administrador.'
                         typeAlert = 0
                         return render_template('public/modulo_login/index.html', msjAlert=msg, typeAlert=typeAlert)
                         
-                    cursor = conexion_MySQLdb.cursor(dictionary=True)
+                    cursor = conexion_DB.cursor(cursor_factory=psycopg2.extras.DictCursor)
                     cursor.execute('SELECT * FROM login_python WHERE email = %s', (email,))
                     account = cursor.fetchone()
                     
@@ -112,7 +112,7 @@ def registrar_rutas(app):
                         password_encriptada = generate_password_hash(password, method='scrypt')
                         cursor.execute('INSERT INTO login_python (nombre, apellido, email, password) VALUES (%s, %s, %s, %s)', 
                                      (nombre, apellido, email, password_encriptada))
-                        conexion_MySQLdb.commit()
+                        conexion_DB.commit()
                         msg = 'Cuenta creada exitosamente.'
                         typeAlert = 1
                         return render_template('public/modulo_login/index.html', msjAlert=msg, typeAlert=typeAlert)
@@ -122,8 +122,8 @@ def registrar_rutas(app):
                 finally:
                     if 'cursor' in locals():
                         cursor.close()
-                    if 'conexion_MySQLdb' in locals() and conexion_MySQLdb is not None:
-                        conexion_MySQLdb.close()
+                    if 'conexion_DB' in locals() and conexion_DB is not None:
+                        conexion_DB.close()
         
         return render_template('public/modulo_login/register.html', msjAlert=msg, typeAlert=typeAlert)
 
@@ -133,7 +133,7 @@ def registrar_rutas(app):
         if 'conectado' not in session:
             return redirect(url_for('loginUser'))
         
-        if session['id'] != id:
+        if int(session['id']) != id:
             return render_template('public/dashboard/home.html', 
                                   msjAlert='No tiene permiso para editar este perfil.', 
                                   typeAlert=0,
@@ -150,13 +150,13 @@ def registrar_rutas(app):
             repite_password = request.form.get('repite_password', '')
             
             try:
-                conexion_MySQLdb = connectionBD()
-                if conexion_MySQLdb is None:
+                conexion_DB = connectionBD()
+                if conexion_DB is None:
                     msg = 'Error de conexión a la base de datos. Por favor contacte al administrador.'
                     typeAlert = 0
                     return render_template('public/dashboard/home.html', msjAlert=msg, typeAlert=typeAlert, dataLogin=dataLoginSesion())
                     
-                cursor = conexion_MySQLdb.cursor()
+                cursor = conexion_DB.cursor()
                 
                 if password:
                     if password != repite_password:
@@ -180,7 +180,7 @@ def registrar_rutas(app):
                     msg = 'Perfil actualizado correctamente.'
                     typeAlert = 1
                 
-                conexion_MySQLdb.commit()
+                conexion_DB.commit()
                 
                 # Actualizar datos de sesión
                 session['nombre'] = nombre
@@ -193,8 +193,8 @@ def registrar_rutas(app):
             finally:
                 if 'cursor' in locals():
                     cursor.close()
-                if 'conexion_MySQLdb' in locals() and conexion_MySQLdb is not None:
-                    conexion_MySQLdb.close()
+                if 'conexion_DB' in locals() and conexion_DB is not None:
+                    conexion_DB.close()
         
         return render_template('public/dashboard/home.html', msjAlert=msg, typeAlert=typeAlert, dataLogin=dataLoginSesion())
 
